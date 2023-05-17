@@ -1,0 +1,4 @@
+# Emulation
+
+def settime():
+    ...
