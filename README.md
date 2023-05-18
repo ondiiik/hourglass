@@ -1,9 +1,9 @@
 # ESP8266 Hourglass
 
-!![hourglass_01](img/hourglass_01.png)
-
 Simple ESP8266 Micropython based electronic hour glass, useful for some table games
 or just to learn small children to get feeling how time flows ;-).
+
+[![hourglass_video](http://img.youtube.com/vi/Gjs1syfmNBQ/0.jpg)](https://youtu.be/Gjs1syfmNBQ)
 
 ## Installation
 
