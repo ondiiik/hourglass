@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from framebuf import FrameBuffer, MONO_HLSB
 
 glyphs_setup = {0   : FrameBuffer(bytearray(b'\x00\x0c\x12"DH0\x00'), 8, 8, MONO_HLSB),

@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from machine import I2C
 from struct import unpack
 from micropython import const

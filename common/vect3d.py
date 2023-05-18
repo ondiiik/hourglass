@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 def dominates(v):
     a = abs(v[0]), abs(v[1]), abs(v[2])
     i = a.index(max(a))

@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from collections import deque
 from uasyncio import Event
 from machine import reset

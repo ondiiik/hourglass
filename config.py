@@ -30,3 +30,8 @@ ACC_COMPENSATE = -10, 29, 69
 # positions of X (1), Y(2), Z(3) and signess says
 # if value is positive or negative.
 ACC_TRANSFORM = 2, -1, -3
+
+# Follows HW configuration
+PIN_SDA = 5
+PIN_SCL = 4
+SPI_ID = 1

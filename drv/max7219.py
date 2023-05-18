@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from .pin import NSsPin
 from micropython import const
 from machine import SPI

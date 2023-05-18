@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from .accel import Accel
 from .clock import Clock
 from .display import DispMan

@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from .task import Task
 from common.matrixbuffer import MatrixBuffer
 from common.atools import core_task

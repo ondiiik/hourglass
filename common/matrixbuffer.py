@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from framebuf import FrameBuffer, MONO_HLSB
 
 

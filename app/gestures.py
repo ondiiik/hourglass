@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from .task import Task
 from common.atools import azip, Queue
 from common.vect3d import dominates

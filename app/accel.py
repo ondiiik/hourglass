@@ -1,3 +1,4 @@
+# MIT license; Copyright (c) 2023 Ondrej Sienczak
 from .task import Task
 from drv import accel as accel_drv
 from uasyncio import sleep_ms, Event
