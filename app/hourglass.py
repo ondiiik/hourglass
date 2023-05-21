@@ -15,7 +15,7 @@ class HourGlass(Task):
 
     def __init__(self):
         super().__init__('hourglass')
-        print('Hourglass v1.1 by OSi')
+        print('Hourglass v1.2 by OSi')
         self.neck_delay = 468.75  # 15.625 * 30 => 30s
         self.anim_delay = 10
         self.pulsing = 0

@@ -6,9 +6,61 @@ from common.atools import core_task
 from machine import RTC
 from uasyncio import sleep_ms, create_task
 from utime import ticks_ms
-from config import WIFI, NTP_SERVER, TIME_ZONE_HOURS, CLOCK_BRIGHT_TIME, BRIGHTNESS
+from config import WIFI, NTP_SERVER, TIME_ZONE_HOURS, CLOCK_BRIGHT_TIME, BRIGHTNESS, WIFI_TIMEOUT, NTP_RETRY
+from usys import print_exception
 import network
 import ntptime
+
+
+class WiFi:
+    def __init__(self,
+                 clock: 'Clock'):
+        self.clock = clock
+
+    async def __aenter__(self):
+        if not WIFI:
+            print('No WiFi configuration - skiping NTP')
+            return
+
+        print('Activating NIC')
+        self.nic = network.WLAN(network.STA_IF)
+        self.nic.active(True)
+        print('Scanning WiFi')
+        channels = self.nic.scan()
+        for wifi_user in WIFI:
+            if [True for channel in channels if wifi_user[0] == channel[0]]:
+                break
+        else:
+            wifi_user = None
+
+        if wifi_user is None:
+            # No internet - no precise time
+            print('No WiFi found')
+            raise RuntimeError('No WiFi found')
+
+        # Connect to WiFi
+        print('Connecting to', wifi_user[0].decode())
+        self.nic.connect(*wifi_user)
+
+        for retry in range(100):
+            if self.nic.isconnected():
+                break
+            self.clock._draw_time()
+            self.clock.dispman.brightness(self, 5 * (retry % 2))
+            await sleep_ms(100)
+
+        if retry == WIFI_TIMEOUT * 10:
+            print('WiFi not connected')
+            raise RuntimeError('WiFi not connected')
+
+        print('WiFi connected')
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print('Disconnecting ...')
+        if self.nic.isconnected():
+            self.nic.disconnect()
+        self.nic.active(False)
+        print('WiFi disconnected')
 
 
 class Clock(Task):
@@ -20,6 +72,7 @@ class Clock(Task):
         self.shift = 0
         self.now = ticks_ms()
         self.dispman = None
+        self.sync_task = None
 
     @core_task
     async def __call__(self):
@@ -43,56 +96,40 @@ class Clock(Task):
 
     @core_task
     async def _sync(self):
+        self.sync_task = create_task(self._ntp())
+        await sleep_ms(86400000)
+
         while True:
             # NTP sync once every 24 hours
-            create_task(self._ntp())
+            if self.sync_task.done():
+                self.sync_task = create_task(self._ntp())
             await sleep_ms(86400000)
 
     async def _ntp(self):
         # Try to synchronize clocks from internet
-        print('Activating NIC')
-        nic = network.WLAN(network.STA_IF)
-        nic.active(True)
-        print('Scanning WiFi')
-        channels = nic.scan()
-        for wifi_user in WIFI:
-            if [True for channel in channels if wifi_user[0] == channel[0]]:
-                break
-        else:
-            wifi_user = None
+        while True:
+            try:
+                async with WiFi(self):
+                    print('Synchronizing time with', NTP_SERVER)
+                    self.dispman.brightness(self, 0)
+                    ntptime.host = NTP_SERVER
 
-        if wifi_user is None:
-            # No internet - no precise time
-            print('No WiFi found')
-            return
+                    for n in range(8):
+                        try:
+                            ntptime.settime()
+                            now = self.rtc.datetime()
+                            break
+                        except OSError:
+                            print('NTP timeout - retry', n)
+                            await sleep_ms(1000)
 
-        # Connect to WiFi
-        print('Connecting to', wifi_user[0].decode())
-        nic.connect(*wifi_user)
-
-        for retry in range(100):
-            if nic.isconnected():
-                break
-            self._draw_time()
-            self.dispman.brightness(self, 5 * (retry % 2))
-            await sleep_ms(100)
-
-        if retry == 99:
-            print('Not-Connected')
-            return
-
-        self.dispman.brightness(self, 0)
-        print('Synchronizing time with', NTP_SERVER)
-        ntptime.host = NTP_SERVER
-        ntptime.settime()
-
-        print('Disconnected')
-        if nic.isconnected():
-            nic.disconnect()
-        nic.active(False)
-
-        now = self.rtc.datetime()
-        self.shift = ticks_ms() - now[4] * 3600000 - now[5] * 60000 - now[6] * 1000 - now[7] - TIME_ZONE_HOURS * 3600000
+                    self.shift = ticks_ms() - now[4] * 3600000 - now[5] * 60000 - now[6] * 1000 - now[7] - TIME_ZONE_HOURS * 3600000
+                    print('NTP synchronized')
+                    return
+            except Exception as e:
+                print('NTP sync failed, retry in', NTP_RETRY, 'minutes ...')
+                print_exception(e)
+                await sleep_ms(NTP_RETRY * 60000)
 
     def _update_time(self):
         self.now = ticks_ms() - self.shift
