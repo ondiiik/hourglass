@@ -13,10 +13,7 @@ _DISPLAYTEST = const(15)
 
 
 class Matrix8x8:
-    def __init__(self,
-                 spi: SPI,
-                 cs: int,
-                 cnt: int = 1):
+    def __init__(self, spi: SPI, cs: int, cnt: int = 1):
         self._cs = NSsPin(cs)
         self._active = True
         self._spi = spi
@@ -25,11 +22,13 @@ class Matrix8x8:
         self._bright = -1
 
         # Initialize display
-        for reg, data in ((_SHUTDOWN, 0),
-                          (_DISPLAYTEST, 0),
-                          (_SCANLIMIT, 7),
-                          (_DECODEMODE, 0),
-                          (_SHUTDOWN, 1)):
+        for reg, data in (
+            (_SHUTDOWN, 0),
+            (_DISPLAYTEST, 0),
+            (_SCANLIMIT, 7),
+            (_DECODEMODE, 0),
+            (_SHUTDOWN, 1),
+        ):
             self._write(reg, data)
 
         # Set minimal brightness
@@ -60,8 +59,7 @@ class Matrix8x8:
         return self._bright
 
     @brightness.setter
-    def brightness(self,
-                   value: int) -> None:
+    def brightness(self, value: int) -> None:
         if self._bright != value:
             self._bright = max(0, min(15, value))
             self._write(_INTENSITY, self._bright)
@@ -71,14 +69,13 @@ class Matrix8x8:
         return self._active
 
     @active.setter
-    def active(self,
-               value: bool) -> None:
+    def active(self, value: bool) -> None:
         value = bool(value)
         if value != self._active:
             self._active = value
             self._write(_SHUTDOWN, 1 if value else 0)
 
-    def show(self, *args: 'MatrixBuffer') -> None:
+    def show(self, *args: "MatrixBuffer") -> None:
         if not self._active:
             return
 
@@ -86,6 +83,7 @@ class Matrix8x8:
             return n[0] % 2
 
         for row in range(8):
+
             def choose_row(n: tuple[int, list[int, ...]]) -> int:
                 return n[1].buffs[1][row]
 
@@ -100,9 +98,7 @@ class Matrix8x8:
                         self._cmd[1] = pixels[row]
                         self._spi.write(self._cmd)
 
-    def _write(self,
-               reg: int,
-               value: int) -> None:
+    def _write(self, reg: int, value: int) -> None:
         self._cmd[0] = reg
         self._cmd[1] = value
 

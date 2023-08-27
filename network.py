@@ -2,6 +2,7 @@
 
 STA_IF = 1
 
+
 class WLAN:
     def __init__(self, mode):
         self._cntdn = 4
@@ -10,7 +11,7 @@ class WLAN:
         ...
 
     def scan(self):
-        return (b'MyNetwork', b'123456', 11, 100, 3, 0),
+        return ((b"MyNetwork", b"123456", 11, 100, 3, 0),)
 
     def connect(self, ssid, pswd):
         ...

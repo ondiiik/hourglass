@@ -13,14 +13,17 @@ def core_task(coro):
         except Exception as e:
             print_exception(e)
         else:
-            print(f'Task {coro} exited !!!')
+            print(f"Task {coro} exited !!!")
         reset()
+
     return wrapper
 
 
 class azip:
     def __init__(self, *iterators):
-        self.iterators = [i.__aiter__() if hasattr(i, '__aiter__') else iter(i) for i in iterators]
+        self.iterators = [
+            i.__aiter__() if hasattr(i, "__aiter__") else iter(i) for i in iterators
+        ]
 
     def __aiter__(self):
         return self
@@ -29,15 +32,14 @@ class azip:
         try:
             ret = []
             for i in self.iterators:
-                ret.append(await i.__anext__() if hasattr(i, '__anext__') else next(i))
+                ret.append(await i.__anext__() if hasattr(i, "__anext__") else next(i))
             return ret
         except StopIteration as e:
             raise StopAsyncIteration(str(e))
 
 
 class Queue:
-    def __init__(self,
-                 maxlen: int):
+    def __init__(self, maxlen: int):
         self._q = deque(tuple(), maxlen)
         self._e = Event()
 

@@ -22,11 +22,13 @@ class AccelSync:
 
 class Accel(Task):
     def __init__(self):
-        super().__init__('accel')
-        self.gravity = b'\0\0\0'
-        self.grav45 = b'\0\0'
+        super().__init__("accel")
+        self.gravity = b"\0\0\0"
+        self.grav45 = b"\0\0"
         self.listeners = list()
-        self.transform = bytes([abs(i)-1 for i in ACC_TRANSFORM]), tuple([1 if i>0 else -1 for i in ACC_TRANSFORM])
+        self.transform = bytes([abs(i) - 1 for i in ACC_TRANSFORM]), tuple(
+            [1 if i > 0 else -1 for i in ACC_TRANSFORM]
+        )
         accel_drv.compensate(*ACC_COMPENSATE)
 
     @core_task

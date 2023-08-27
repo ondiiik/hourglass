@@ -10,14 +10,14 @@ TIME_ZONE_HOURS = 2
 # Time bright time range in hours
 CLOCK_BRIGHT_TIME = 7, 20
 
-# NTP server to be used for time synchronization
-NTP_SERVER = '0.cz.pool.ntp.org'
+# NTP servers to be used for time synchronization
+NTP_SERVER = ("0.cz.pool.ntp.org",)
 
 # Retry time for NTP synchronization in minutes
 NTP_RETRY = 15
 
 # All possible SSID and passwords shall be listed here
-WIFI = (b'MySSID', b'MyPassword'),
+WIFI = ((b"MySSID", b"MyPassword"),)
 
 # Timeout for attempt to connect to WiFi in seconds
 WIFI_TIMEOUT = 30

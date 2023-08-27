@@ -5,7 +5,7 @@ from uasyncio import run, gather
 
 
 async def main():
-    dispman.owner = dispman.tasks['hourglass']
+    dispman.owner = dispman.tasks["hourglass"]
     await gather(*[t() for t in dispman.tasks.values()])
 
 

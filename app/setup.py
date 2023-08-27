@@ -7,29 +7,53 @@ from uasyncio import sleep_ms, create_task
 
 class Setup(Task):
     def __init__(self):
-        super().__init__('setup')
+        super().__init__("setup")
         self.display = MatrixBuffer(), MatrixBuffer()
         self.anim_delay = 10
-        self.last = 30, 's'
+        self.last = 30, "s"
         self.brightness = 2
 
     async def setup(self):
-        hourglass = self.tasks['hourglass']
-        dispman = self.tasks['dispman']
-        values = 10, 20, 30, 40, 50, \
-                 60, 120, 180, 240, 300, 360, 420, 480, 540, \
-                 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600
+        hourglass = self.tasks["hourglass"]
+        dispman = self.tasks["dispman"]
+        values = (
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            120,
+            180,
+            240,
+            300,
+            360,
+            420,
+            480,
+            540,
+            600,
+            900,
+            1200,
+            1500,
+            1800,
+            2100,
+            2400,
+            2700,
+            3000,
+            3300,
+            3600,
+        )
 
         await self._draw(dispman, hourglass)
 
-        async for g in self.tasks['gestures'].register(self, 'UDXE'):
+        async for g in self.tasks["gestures"].register(self, "UDXE"):
             dispman.keep_alive(self)
 
-            if g == 'X':
-                dispman.owner = self.tasks['hourglass']
+            if g == "X":
+                dispman.owner = self.tasks["hourglass"]
                 break
 
-            if g == 'E':
+            if g == "E":
                 l = len(hourglass.display[0])
                 if l != 0 and l != 64:
                     create_task(self._clock_reset(dispman, hourglass))
@@ -37,10 +61,10 @@ class Setup(Task):
 
             final_time = round(hourglass.final_time)
 
-            if g == 'U':
+            if g == "U":
                 i = min(len(values) - 1, values.index(final_time) + 1)
                 r = True
-            elif g == 'D':
+            elif g == "D":
                 i = max(0, values.index(final_time) - 1)
                 r = False
 
@@ -49,7 +73,7 @@ class Setup(Task):
 
     async def _draw(self, dispman, hourglass, reverse=True):
         final_time = round(hourglass.final_time)
-        vn, sn = (final_time, 's') if final_time < 60 else (final_time // 60, 'm')
+        vn, sn = (final_time, "s") if final_time < 60 else (final_time // 60, "m")
         vo, so = self.last
         self.last = vn, sn
         display = self.display
@@ -82,7 +106,7 @@ class Setup(Task):
 
     async def _clock_reset(self, dispman, hourglass):
         hourglass.reset()
-        dispman = self.tasks['dispman']
+        dispman = self.tasks["dispman"]
 
         for _ in range(2):
             for i in range(16):

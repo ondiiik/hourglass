@@ -7,10 +7,11 @@ or just to learn small children to get feeling how time flows ;-).
 
 ## Installation
 
-Installation shall be pretty easy. You just need to flash firmware into your ESP8266 board.
+Installation is pretty easy. You just need to flash
+[firmware](https://github.com/ondiiik/hourglass/raw/main/esp8266/esp8266_hourglass.bin) into your ESP8266 board.
 There is many options how to do it, use of [Thonny IDE](https://thonny.org/) is described here.
 
-If you already do not have Thonny IDE installed, you can follow
+If you already do not have [Thonny IDE](https://thonny.org/) installed, you can follow
 [this page](https://github.com/thonny/thonny/releases).
 
 1. Run `thonny` and follow menu `Tools -> Options... -> Interpreter`.
@@ -26,4 +27,4 @@ If you already do not have Thonny IDE installed, you can follow
 
 ### Setup
 
-Use Thonny IDE again to modify `config.py` directly in ESP device.
+Use Thonny IDE again to modify [config.py](https://github.com/ondiiik/hourglass/blob/main/config.py) directly in ESP device.

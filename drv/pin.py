@@ -3,8 +3,7 @@ from machine import Pin
 
 
 class NSsPin:
-    def __init__(self,
-                 pin: int):
+    def __init__(self, pin: int):
         self._m = Pin(pin, mode=Pin.OUT, value=1)
 
     def __enter__(self):
@@ -16,8 +15,7 @@ class NSsPin:
 
 
 class SsPin:
-    def __init__(self,
-                 pin: int):
+    def __init__(self, pin: int):
         self._m = Pin(pin, mode=Pin.OUT, value=0)
 
     def __enter__(self):

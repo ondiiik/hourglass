@@ -6,26 +6,33 @@ from common.atools import core_task
 from machine import RTC
 from uasyncio import sleep_ms, create_task
 from utime import ticks_ms
-from config import WIFI, NTP_SERVER, TIME_ZONE_HOURS, CLOCK_BRIGHT_TIME, BRIGHTNESS, WIFI_TIMEOUT, NTP_RETRY
+from config import (
+    WIFI,
+    NTP_SERVER,
+    TIME_ZONE_HOURS,
+    CLOCK_BRIGHT_TIME,
+    BRIGHTNESS,
+    WIFI_TIMEOUT,
+    NTP_RETRY,
+)
 from usys import print_exception
 import network
 import ntptime
 
 
 class WiFi:
-    def __init__(self,
-                 clock: 'Clock'):
+    def __init__(self, clock: "Clock"):
         self.clock = clock
 
     async def __aenter__(self):
         if not WIFI:
-            print('No WiFi configuration - skiping NTP')
+            print("No WiFi configuration - skiping NTP")
             return
 
-        print('Activating NIC')
+        print("Activating NIC")
         self.nic = network.WLAN(network.STA_IF)
         self.nic.active(True)
-        print('Scanning WiFi')
+        print("Scanning WiFi")
         channels = self.nic.scan()
         for wifi_user in WIFI:
             if [True for channel in channels if wifi_user[0] == channel[0]]:
@@ -35,11 +42,11 @@ class WiFi:
 
         if wifi_user is None:
             # No internet - no precise time
-            print('No WiFi found')
-            raise RuntimeError('No WiFi found')
+            print("No WiFi found")
+            raise RuntimeError("No WiFi found")
 
         # Connect to WiFi
-        print('Connecting to', wifi_user[0].decode())
+        print("Connecting to", wifi_user[0].decode())
         self.nic.connect(*wifi_user)
 
         for retry in range(100):
@@ -50,22 +57,22 @@ class WiFi:
             await sleep_ms(100)
 
         if retry == WIFI_TIMEOUT * 10:
-            print('WiFi not connected')
-            raise RuntimeError('WiFi not connected')
+            print("WiFi not connected")
+            raise RuntimeError("WiFi not connected")
 
-        print('WiFi connected')
+        print("WiFi connected")
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        print('Disconnecting ...')
+        print("Disconnecting ...")
         if self.nic.isconnected():
             self.nic.disconnect()
         self.nic.active(False)
-        print('WiFi disconnected')
+        print("WiFi disconnected")
 
 
 class Clock(Task):
     def __init__(self):
-        super().__init__('clock')
+        super().__init__("clock")
         self.display = MatrixBuffer(), MatrixBuffer()
         self.rtc = RTC()
         self.last = -1, -1
@@ -79,7 +86,7 @@ class Clock(Task):
         create_task(self._gestures())
         create_task(self._sync())
 
-        self.dispman = self.tasks['dispman']
+        self.dispman = self.tasks["dispman"]
         self.dispman.brightness(self, 0)
 
         # Precision of RTC on ESP8266 is horrible.
@@ -110,24 +117,34 @@ class Clock(Task):
         while True:
             try:
                 async with WiFi(self):
-                    print('Synchronizing time with', NTP_SERVER)
-                    self.dispman.brightness(self, 0)
-                    ntptime.host = NTP_SERVER
-
                     for n in range(8):
-                        try:
-                            ntptime.settime()
-                            now = self.rtc.datetime()
-                            break
-                        except OSError:
-                            print('NTP timeout - retry', n)
-                            await sleep_ms(1000)
+                        for ntp_server in NTP_SERVER:
+                            print("Synchronizing time with", ntp_server)
+                            self.dispman.brightness(self, 0)
+                            ntptime.host = ntp_server
 
-                    self.shift = ticks_ms() - now[4] * 3600000 - now[5] * 60000 - now[6] * 1000 - now[7] - TIME_ZONE_HOURS * 3600000
-                    print('NTP synchronized')
-                    return
+                            try:
+                                ntptime.settime()
+                                now = self.rtc.datetime()
+                                break
+                            except OSError:
+                                print("\tNTP timeout - retry", n)
+                                await sleep_ms(1000)
+                        else:
+                            continue
+
+                        self.shift = (
+                            ticks_ms()
+                            - now[4] * 3600000
+                            - now[5] * 60000
+                            - now[6] * 1000
+                            - now[7]
+                            - TIME_ZONE_HOURS * 3600000
+                        )
+                        print("NTP synchronized")
+                        return
             except Exception as e:
-                print('NTP sync failed, retry in', NTP_RETRY, 'minutes ...')
+                print("NTP sync failed, retry in", NTP_RETRY, "minutes ...")
                 print_exception(e)
                 await sleep_ms(NTP_RETRY * 60000)
 
@@ -156,10 +173,12 @@ class Clock(Task):
                 self.display[1].blit(glyphs_clock[100], 0, 0, 0)
 
             self.dispman.draw(self)
-            self.dispman.brightness(self, BRIGHTNESS if h in range(*CLOCK_BRIGHT_TIME) else 0)
+            self.dispman.brightness(
+                self, BRIGHTNESS if h in range(*CLOCK_BRIGHT_TIME) else 0
+            )
 
     @core_task
     async def _gestures(self):
-        dispman = self.tasks['dispman']
-        async for _ in self.tasks['gestures'].register(self, '*'):
-            dispman.owner = self.tasks['hourglass']
+        dispman = self.tasks["dispman"]
+        async for _ in self.tasks["gestures"].register(self, "*"):
+            dispman.owner = self.tasks["hourglass"]

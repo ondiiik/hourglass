@@ -10,12 +10,11 @@ from config import CLOCK_TIME, BRIGHTNESS
 
 
 class HourGlass(Task):
-    '''Coroutine task providing hourglass animation
-    '''
+    """Coroutine task providing hourglass animation"""
 
     def __init__(self):
-        super().__init__('hourglass')
-        print('Hourglass v1.2 by OSi')
+        super().__init__("hourglass")
+        print("Hourglass v1.3 by OSi")
         self.neck_delay = 468.75  # 15.625 * 30 => 30s
         self.anim_delay = 10
         self.pulsing = 0
@@ -24,8 +23,7 @@ class HourGlass(Task):
 
     @property
     def final_time(self) -> float:
-        '''Property used to get or set final hourglass time in seconds
-        '''
+        """Property used to get or set final hourglass time in seconds"""
         return self.neck_delay / 15.625
 
     @final_time.setter
@@ -33,15 +31,13 @@ class HourGlass(Task):
         self.neck_delay = value * 15.625
 
     def reset(self):
-        '''Reset hourglass to initial state (sand in top side)
-        '''
+        """Reset hourglass to initial state (sand in top side)"""
         self.display[0].reset(True)
         self.display[1].reset(False)
 
     @core_task
     async def __call__(self):
-        '''Main coroutine task handling sand animation
-        '''
+        """Main coroutine task handling sand animation"""
         neck = (7, 0), (0, 7)
 
         # Draw initial sand
@@ -54,9 +50,9 @@ class HourGlass(Task):
         tnext = ticks_ms()
         tclock = tnext + self.clock_delay
         last_len = 0
-        accel = self.tasks['accel']
-        clock = self.tasks['clock']
-        dispman = self.tasks['dispman']
+        accel = self.tasks["accel"]
+        clock = self.tasks["clock"]
+        dispman = self.tasks["dispman"]
         dispman.brightness(self, BRIGHTNESS)
         while True:
             # Animate gravity
@@ -85,9 +81,11 @@ class HourGlass(Task):
                 tclock = ts + self.clock_delay
                 if ts > tnext:
                     tnext += self.neck_delay
-                    su, sl, nu, nl = (self.display[1], self.display[0], neck[1], neck[0]) \
-                        if g_3d[2] > 0 else \
-                        (self.display[0], self.display[1], neck[0], neck[1])
+                    su, sl, nu, nl = (
+                        (self.display[1], self.display[0], neck[1], neck[0])
+                        if g_3d[2] > 0
+                        else (self.display[0], self.display[1], neck[0], neck[1])
+                    )
                     if su[nu][0] and not sl[nl][0]:
                         su[nu] = 0
                         sl[nl] = 1
@@ -109,18 +107,16 @@ class HourGlass(Task):
 
     @core_task
     async def _gestures(self):
-        '''Coroutine task receiving gestures related to hourglass
-        '''
-        dispman = self.tasks['dispman']
-        async for _ in self.tasks['gestures'].register(self, 'E'):
-            setup = self.tasks['setup']
+        """Coroutine task receiving gestures related to hourglass"""
+        dispman = self.tasks["dispman"]
+        async for _ in self.tasks["gestures"].register(self, "E"):
+            setup = self.tasks["setup"]
             dispman.owner = setup
             create_task(setup.setup())
 
     async def _pulse(self):
-        '''Proceed pulsing of LEDs when clock is over
-        '''
-        dispman = self.tasks['dispman']
+        """Proceed pulsing of LEDs when clock is over"""
+        dispman = self.tasks["dispman"]
         for _ in range(4):
             for i in range(16):
                 dispman.brightness(self, i)

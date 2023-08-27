@@ -9,38 +9,30 @@ from random import getrandbits
 
 
 class MatrixSand(MatrixBuffer):
-    '''Extension of frame buffer with capability of animating the sand.
-    '''
+    """Extension of frame buffer with capability of animating the sand."""
 
-    def __init__(self,
-                 width: int = 8,
-                 height: int = 8):
+    def __init__(self, width: int = 8, height: int = 8):
         super().__init__(width, height)
         self._len = 0
 
     def __len__(self) -> int:
-        '''Count of grains.
-        '''
+        """Count of grains."""
         return self._len
 
-    def __setitem__(self,
-                    key: tuple[int, int],
-                    value: int) -> None:
-        '''Override item assignment of pixels/grains to display.
+    def __setitem__(self, key: tuple[int, int], value: int) -> None:
+        """Override item assignment of pixels/grains to display.
 
         This overrides original pixel assignment to support easy and fast counting
         of grains.
-        '''
+        """
         grains = self._pixels[self._act]
         if grains.pixel(*key) != value:
-            self._len += (1 if value else -1)
+            self._len += 1 if value else -1
             grains.pixel(*key, value)
             self._changed[self._act].pixel(*key, 1)
 
-    def iterate(self,
-                ax: float,
-                ay: float) -> bool:
-        '''Iterate sand grains animation.
+    def iterate(self, ax: float, ay: float) -> bool:
+        """Iterate sand grains animation.
 
         Process one sand grains animation step in direction of gravity.
 
@@ -48,7 +40,7 @@ class MatrixSand(MatrixBuffer):
         :param ay:    Accelerometer (gravity) in direction Y
 
         :return:    State if something has been animated or not
-        '''
+        """
         # unit vectors for accelerometer
         ix = iy = 0
         if abs(ax) > 0.01:
@@ -82,7 +74,9 @@ class MatrixSand(MatrixBuffer):
                     # is it blocked?
                     if new_grains.pixel(newx, newy):
                         # can we move diagonally?
-                        if not new_grains.pixel(x, newy) and not new_grains.pixel(newx, y):
+                        if not new_grains.pixel(x, newy) and not new_grains.pixel(
+                            newx, y
+                        ):
                             # can move either way
                             # move away from random side
                             if getrandbits(1):
@@ -108,12 +102,11 @@ class MatrixSand(MatrixBuffer):
 
         return animated
 
-    def reset(self,
-              fill: bool) -> None:
-        '''Reset display to be either fully clear or fully filled.
+    def reset(self, fill: bool) -> None:
+        """Reset display to be either fully clear or fully filled.
 
         :param fill:    Either fill when ``True`` or clear when ``False``.
-        '''
+        """
         if fill:
             fill = 255
             self._len = 64
