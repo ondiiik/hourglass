@@ -4,6 +4,8 @@ from common.atools import azip, Queue
 from common.vect3d import dominates
 from common.atools import core_task
 from micropython import const
+from drv import beeper
+from asyncio import create_task
 
 
 _G_THR_UP = const(400)
@@ -60,6 +62,7 @@ class Gestures(Task):
                     # When quickly rotated back then it is gesture
                     if d == 1:
                         self._notify("U" if side > 0 else "D")
+                        create_task(beeper.beep(30))
                         break
                 else:
                     self._notify("X")
@@ -79,6 +82,7 @@ class Gestures(Task):
                 elif d == i:
                     if i == 1:
                         self._notify("L" if side < 0 else "R")
+                        create_task(beeper.beep(30))
                     break
                 else:
                     side = s

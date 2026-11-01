@@ -27,12 +27,19 @@ class RTC:
 
 class Pin:
     def __init__(self, pin: int, mode: int = 2, value: int = 0):
+        self._pin = pin
         self._value = value
 
     def value(self, value: int = None) -> int:
         if value is not None:
             self._value = value
         return self._value
+
+    def on(self) -> None:
+        self.value(1)
+
+    def off(self) -> None:
+        self.value(0)
 
     OUT = 1
     IN = 2

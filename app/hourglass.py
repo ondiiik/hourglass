@@ -3,10 +3,11 @@ from .task import Task
 from common import MatrixSand
 from common.atools import core_task
 from common.vect3d import dominates
-from uasyncio import sleep_ms, create_task
+from uasyncio import sleep_ms, create_task, gather
 from utime import ticks_ms
 from gc import collect
 from config import CLOCK_TIME, BRIGHTNESS
+from drv import beeper
 
 
 class HourGlass(Task):
@@ -61,13 +62,15 @@ class HourGlass(Task):
                 if s.iterate(*g_45):
                     dispman.keep_alive(self)
 
-            # Checks if we want launch _pulse
+            # Checks if we are at the ned of countdown
             l = len(s)
             if l != last_len:
                 if l == 0 or l == 64:
                     if self.pulsing == 0:
-                        create_task(self._pulse())
-                    self.pulsing = min(2, self.pulsing + 1)
+                        create_task(self._done())
+                    self.pulsing = min(3, self.pulsing + 1)
+                elif l % 16 == 0:
+                    create_task(beeper.beep(50, 100, (l if l > last_len else (64 - l)) // 16))
                 last_len = l
 
             # Process hourglass neck throughput
@@ -113,6 +116,16 @@ class HourGlass(Task):
             setup = self.tasks["setup"]
             dispman.owner = setup
             create_task(setup.setup())
+
+    async def _done(self):
+        print("Done ...")
+        dispman = self.tasks["dispman"]
+        await gather(self._pulse(), self._beep())
+
+    async def _beep(self):
+        while self.pulsing != 0:
+            await beeper.beep(50, 100, 4)
+            await sleep_ms(1000)
 
     async def _pulse(self):
         """Proceed pulsing of LEDs when clock is over"""
